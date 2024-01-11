@@ -11,12 +11,16 @@ export default function App() {
     setItems((items) => items.filter((item) => item.id !== id))
   }
 
+  function handlePacked(id) {
+    setItems((items) => items.map((item) => item.id === id ? {...item, "packed": !item.packed} : item))
+  }
+
   return (
     <div className="App">
       <Logo />
       <Form handleAddItems={handleAddItems} />
-      <PackingList items={items} handleDeleteItem={handleDeleteItem}/>
-      <Stats />
+      <PackingList items={items} handleDeleteItem={handleDeleteItem} handlePacked={handlePacked}/>
+      <Stats items={items} />
     </div>
   );
 }
@@ -30,11 +34,13 @@ function Logo() {
 }
 function Form({handleAddItems}) {
   const [description, setDescription] = useState("")
+  
   const [quantity, setQuantity] = useState(1)
+  
   function handleSubmit(e){
     e.preventDefault()
     if (!description) return
-    handleAddItems({"quantity": quantity, "description": description, "id": Number(Date.now())})
+    handleAddItems({"quantity": quantity, "description": description, "id": Number(Date.now()), "packed": false})
     setDescription("")
     setQuantity(1)
   }
@@ -53,31 +59,41 @@ function Form({handleAddItems}) {
   )
 }
 
-function PackingList({items, handleDeleteItem}) {
+function PackingList({items, handleDeleteItem, handlePacked}) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item key={item.id} item={item} handleDeleteItem={handleDeleteItem}/>
+          <Item key={item.id} item={item} handleDeleteItem={handleDeleteItem} handlePacked={handlePacked}/>
         ))}
       </ul>
     </div>
   )
 }
 
-function Item({item, handleDeleteItem}) {
+function Item({item, handleDeleteItem, handlePacked}) {
   return (
     <li>
+      <input type="checkbox" value={item.packed} onClick={() => handlePacked(item.id)}></input>
       <span style={item.packed ? {textDecoration:"line-through"} : {}}>{item.quantity} {item.description}</span>
       <button onClick={() => handleDeleteItem(item.id)}>&times;</button>
     </li>
   )
 }
 
-function Stats() {
+function Stats({items}) {
+  if (items.length < 1) return <footer className="stats"><em>No Items found! Start adding them.</em></footer>
+  const totalItems = items.length
+  const totalPacked = items.filter((item) => item.packed).length
+  const packedPercent = Math.round(totalPacked / totalItems * 100, 2)
   return (
     <footer className="stats">
-      <em>You have x items to pack, and you have already packed y itesm(z%).</em>
+      <em>
+        {packedPercent === 100
+          ? "You got everything! Ready to go ✈️"
+          : `You have ${totalItems} on your list, and you have already packed ${totalPacked} items(${packedPercent}%).}`
+        }
+      </em>
     </footer>
   )
 }
