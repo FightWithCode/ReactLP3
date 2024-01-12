@@ -1,0 +1,10 @@
+export default function Item({item, handleDeleteItem, handlePacked}) {
+    return (
+      <li>
+        <input type="checkbox" value={item.packed} onClick={() => handlePacked(item.id)}></input>
+        <span style={item.packed ? {textDecoration:"line-through"} : {}}>{item.quantity} {item.description}</span>
+        <button onClick={() => handleDeleteItem(item.id)}>&times;</button>
+      </li>
+    )
+  }
+  
